@@ -2,7 +2,7 @@
   background-size: cover !important;
   background-position: center !important;
   width: 100%;
-  padding: 40px 20px;
+
   box-sizing: border-box;
   animation: animateMovieinfo 1s;
 }
@@ -20,8 +20,7 @@
   max-width: 1280px;
   min-height: 450px;
   margin: 0 auto;
-  background: rgb(0, 0, 0, 0.7);
-  border-radius: 20px;
+  background: #000;
   position: relative;
 }
 
@@ -62,36 +61,8 @@
   position: relative;
 }
 
-.rmdb-score {
-  position: absolute;
-  margin: 0;
-  right: 0px;
-  top: -3px;
-}
-
 .rmdb-director {
   margin: 0;
-}
-
-.fa-film {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
-  color: #fff;
-}
-
-meter::-webkit-meter-bar {
-  background: #fff;
-  width: 150px;
-}
-meter::-webkit-meter-optimum-value {
-  background: linear-gradient(to bottom, #16d47b) !important;
-}
-meter::-webkit-meter-suboptimum-value {
-  background: linear-gradient(to bottom, #fbb450) !important;
-}
-meter::-webkit-meter-even-less-good-value {
-  background: linear-gradient(to bottom, #ee5f5b) !important;
 }
 
 @media screen and (max-width: 1000px) {
@@ -110,11 +81,7 @@ meter::-webkit-meter-even-less-good-value {
     width: 100% !important;
   }
 
-  .fa-film {
-    display: none;
-  }
-
   .rmdb-movieinfo-text h1 {
     font-size: 32px;
-  }  
+  }
 }

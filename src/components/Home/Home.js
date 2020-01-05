@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   API_URL,
   API_KEY,
@@ -11,92 +11,91 @@ import SearchBar from '../elements/SearchBar/SearchBar';
 import FourColGrid from '../elements/FourColGrid/FourColGrid';
 import MovieThumb from '../elements/MovieThumb/MovieThumb';
 import LoadMoreBtn from '../elements/LoadMoreBtn/LoadMoreBtn';
-import Spinner from '../elements/Spinner/Spinner';
 
 import './Home.css';
 
-class Home extends Component {
-  state = {
-    movies: [],
-    heroImage: null,
-    loading: false,
-    currentPage: 0,
-    totalPages: 0,
-    searchTerm: ''
-  };
-  /****************FETCH DATA ***************/
-  componentDidMount() {
-    this.setState({ loading: true });
-    const endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
-    this.fetchMovie(endpoint);
-  }
-  /************SEARCH BAR **************/
+const Home = () => {
+  const [state, setState] = useState({ movies: [] });
 
-  searchItems = searchTerm => {
-    let endpoint = '';
-    this.setState({
-      movies: [],
-      loading: true,
-      searchTerm: searchTerm
-    });
-
-    if (searchTerm === '') {
-      endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
-    } else {
-      endpoint = `${API_URL}search/movie?api_key=${API_KEY}&language=en-US&query=${this.state.searchTerm}`;
+  const fetchMovies = async endpoint => {
+    const params = new URLSearchParams(endpoint);
+    if (!params.get('page')) {
+      setState(prev => ({
+        ...prev,
+        movies: [],
+        searchTerm: params.get('query')
+      }));
     }
-    this.fetchMovie(endpoint);
+
+    const result = await (await fetch(endpoint)).json();
+    setState(prev => ({
+      ...prev,
+      movies: [...prev.movies, ...result.results],
+      heroImage: prev.heroImage || result.results[0],
+      currentPage: result.page,
+      totalPages: result.total_pages
+    }));
   };
 
-  /*****************LOAD MORE ************************/
-  LoadMoreMovie = () => {
-    let endpoint = '';
-    this.setState({ loading: true });
+  useEffect(() => {
+    fetchMovies(`${API_URL}movie/popular?api_key=${API_KEY}`);
+  }, []);
 
-    if (this.state.searchTerm === '') {
-      endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=${this
-        .state.currentPage + 1}`;
-    } else {
-      endpoint = `${API_URL}search/movie?api_key=${API_KEY}&language=en-US&query=${
-        this.state.searchTerm
-      }&page=${this.state.currentPage + 1}`;
+  const searchItems = searchTerm => {
+    let endpoint = `${API_URL}search/movie?api_key=${API_KEY}&query=${searchTerm}`;
+    if (!searchTerm) {
+      endpoint = `${API_URL}movie/popular?api_key=${API_KEY}`;
     }
-    this.fetchItems(endpoint);
+    fetchMovies(endpoint);
   };
-  /**************FETCH FUNC *********************/
-  fetchMovie = endpoint => {
-    fetch(endpoint)
-      .then(res => res.json())
-      .then(res => {
-        this.setState({
-          movies: [...this.state.movies, ...res.results],
-          heroImage: this.state.heroImage || res.results[0],
-          loading: false,
-          currentPage: res.pages,
-          totalPages: res.total_pages
-        });
-      });
-  };
-  /*********RENDER ********************/
-  render() {
-    return (
-      <div className='rmdb-home'>
-        {this.state.heroImage ? (
-          <div>
-            <HeroImage
-              image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${this.state.heroImage.backdrop_path}`}
-              title={this.state.heroImage.original_title}
-              text={this.state.heroImage.overview}
-            />
-            <SearchBar callback={this.searchItems} />
-          </div>
-        ) : null}
 
-        <FourColGrid />
-        <Spinner />
-        <LoadMoreBtn />
+  const LoadMoreMovie = () => {
+    const { searchTerm, currentPage } = state;
+    let endpoint = `${API_URL}search/movie?api_key=${searchTerm}&page=${currentPage +
+      1}`;
+    if (!searchTerm) {
+      endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&page=${currentPage +
+        1}`;
+    }
+    fetchMovies(endpoint);
+  };
+
+  return (
+    <div className='rmdb-home'>
+      {state.heroImage ? (
+        <div>
+          <HeroImage
+            image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${state.heroImage.backdrop_path}`}
+            title={state.heroImage.original_title}
+            text={state.heroImage.overview}
+          />
+          <SearchBar callback={searchItems} />
+        </div>
+      ) : null}
+
+      <div className='rmdb-home-grid'>
+        <FourColGrid
+          header={state.searchTerm ? 'Search Result' : 'Popular Movies'}>
+          {state.movies.map((element, index) => {
+            return (
+              <MovieThumb
+                key={index}
+                clickable={true}
+                image={
+                  element.poster_path
+                    ? `${IMAGE_BASE_URL}${POSTER_SIZE}${element.poster_path}`
+                    : './images/no_image.jpg'
+                }
+                movieId={element.id}
+                movieName={element.original_title}
+              />
+            );
+          })}
+        </FourColGrid>
+        <LoadMoreBtn text='Load More' onClick={LoadMoreMovie} />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
 export default Home;

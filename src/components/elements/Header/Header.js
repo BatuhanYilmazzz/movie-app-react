@@ -1,20 +1,14 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 const Header = () => {
   return (
     <div className='rmdb-header'>
       <div className='rmdb-header-content'>
-        <img
-          src='./images/reactMovie_logo.png'
-          alt='rmdb-logo'
-          className='rmdb-logo'
-        />
-        <img
-          src='./images/tmdb_logo.png'
-          alt='tmdb-logo'
-          className='emdb-tmdb-logo'
-        />
+        <Link to='/'>
+          <i className='fas fa-film fa-5x'></i>
+        </Link>
       </div>
     </div>
   );
